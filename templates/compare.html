@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Сравнение цен</h1>
+<form class="card row" method="get">
+  <div><label>Товар</label>
+    <select name="product">{% for p in products %}
+      <option value="{{ p.id }}" {{ 'selected' if product and p.id==product.id }}>{{ p.name }}</option>{% endfor %}
+    </select></div>
+  <div><label>Район</label>
+    <select name="district"><option value="">Все районы</option>{% for d in districts %}
+      <option {{ 'selected' if d==district }}>{{ d }}</option>{% endfor %}
+    </select></div>
+  <div><label>С даты</label><input type="date" name="from" value="{{ d_from }}"></div>
+  <div><label>По дату</label><input type="date" name="to" value="{{ d_to }}"></div>
+  <button>Показать</button>
+</form>
+
+{% if not total %}
+  <div class="card">Нет данных. Загрузите цены на странице «Ввод цен».</div>
+{% else %}
+<div class="kpis">
+  <div class="kpi"><span>Минимум, ₸/{{ unit }}</span><b>{{ '%.0f'|format(total.min) }}</b></div>
+  <div class="kpi"><span>Медиана, ₸/{{ unit }}</span><b>{{ '%.0f'|format(total.med) }}</b></div>
+  <div class="kpi"><span>Максимум, ₸/{{ unit }}</span><b>{{ '%.0f'|format(total.max) }}</b></div>
+  <div class="kpi"><span>Изменение медианы за период</span>
+    <b class="{{ 'warn' if change and change > 0.05 else '' }}">{{ '%+.1f%%'|format(change*100) if change is not none else '—' }}</b></div>
+  <div class="kpi"><span>Наблюдений</span><b>{{ total.n }}</b></div>
+</div>
+
+<h2>Динамика: минимум, медиана, максимум по датам</h2>
+<div class="card"><svg id="chart" viewBox="0 0 1000 300" style="width:100%"></svg>
+  <div class="mute">Сплошная линия — медиана, пунктир — минимум и максимум.</div></div>
+
+<div class="row" style="align-items:start">
+{% for title, data in [('По районам', by_district), ('По типу точки', by_type)] %}
+  <div class="card" style="flex:1; min-width:320px">
+    <h2 style="margin-top:0">{{ title }}</h2>
+    <table><tr><th></th><th class="num">Мин</th><th class="num">Медиана</th><th class="num">Макс</th><th class="num">Набл.</th></tr>
+    {% for name, s in data.items() %}
+      <tr><td>{{ name }}</td><td class="num">{{ '%.0f'|format(s.min) }}</td>
+          <td class="num"><b>{{ '%.0f'|format(s.med) }}</b></td>
+          <td class="num">{{ '%.0f'|format(s.max) }}</td><td class="num">{{ s.n }}</td></tr>
+    {% endfor %}</table>
+  </div>
+{% endfor %}
+</div>
+
+<script>
+const data = {{ series|tojson }};
+const svg = document.getElementById('chart'), W = 1000, H = 300, P = 50;
+const lo = Math.min(...data.map(d => d.min)) * 0.95, hi = Math.max(...data.map(d => d.max)) * 1.05;
+const x = i => P + (W - 2 * P) * (data.length > 1 ? i / (data.length - 1) : 0.5);
+const y = v => H - P - (H - 2 * P) * (v - lo) / (hi - lo || 1);
+const line = (key, style) => `<polyline fill="none" ${style} points="${data.map((d, i) => x(i) + ',' + y(d[key])).join(' ')}"/>`;
+let out = '';
+for (let k = 0; k <= 4; k++) {
+  const v = lo + (hi - lo) * k / 4;
+  out += `<line x1="${P}" x2="${W - P}" y1="${y(v)}" y2="${y(v)}" stroke="#dde3e7"/>` +
+         `<text x="${P - 8}" y="${y(v) + 4}" text-anchor="end" font-size="12" fill="#63727c">${Math.round(v)}</text>`;
+}
+data.forEach((d, i) => {
+  out += `<text x="${x(i)}" y="${H - P + 20}" text-anchor="middle" font-size="12" fill="#63727c">${d.date.slice(8)}.${d.date.slice(5, 7)}</text>` +
+         `<circle cx="${x(i)}" cy="${y(d.med)}" r="4" fill="#0b6e4f"><title>${d.date}: медиана ${Math.round(d.med)} ₸</title></circle>`;
+});
+out += line('min', 'stroke="#63727c" stroke-dasharray="5 5"') + line('max', 'stroke="#63727c" stroke-dasharray="5 5"') +
+       line('med', 'stroke="#0b6e4f" stroke-width="3"');
+svg.innerHTML = out;
+</script>
+{% endif %}
+{% endblock %}

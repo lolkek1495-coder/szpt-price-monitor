@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Справочники</h1>
+{% if error %}<div class="card warn">{{ error }}</div>{% endif %}
+<div class="row" style="align-items:start">
+  <div class="card" style="flex:1; min-width:320px">
+    <h2 style="margin-top:0">Товары</h2>
+    <form class="row" method="post"><input type="hidden" name="kind" value="product">
+      <div><label>Название</label><input name="name" required></div>
+      <div><label>Единица учёта</label><select name="base_unit">{% for k, v in units.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select></div>
+      <button>Добавить</button></form>
+    <table style="margin-top:12px"><tr><th>Товар</th><th>Цена считается за</th></tr>
+      {% for p in products %}<tr><td>{{ p.name }}</td><td>{{ units[p.base_unit] }}</td></tr>{% endfor %}</table>
+  </div>
+  <div class="card" style="flex:1; min-width:320px">
+    <h2 style="margin-top:0">Торговые точки</h2>
+    <form class="row" method="post"><input type="hidden" name="kind" value="outlet">
+      <div><label>Название</label><input name="name" required></div>
+      <div><label>Тип</label><select name="type"><option>магазин</option><option>рынок</option></select></div>
+      <div><label>Район</label><input name="district" size="12" required></div>
+      <button>Добавить</button></form>
+    <table style="margin-top:12px"><tr><th>Точка</th><th>Тип</th><th>Район</th></tr>
+      {% for o in outlets %}<tr><td>{{ o.name }}</td><td>{{ o.type }}</td><td>{{ o.district }}</td></tr>{% endfor %}</table>
+  </div>
+</div>
+{% endblock %}

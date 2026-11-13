@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Ввод цен</h1>
+
+{% if report %}
+<div class="card">
+  <b class="ok">Принято строк: {{ report.accepted }}</b> ·
+  <b class="{{ 'warn' if report.errors else '' }}">Отклонено: {{ report.errors|length }}</b> ·
+  <a href="{{ url_for('alerts', status='новый') }}">Новых сигналов для проверки: {{ report.alerts }}</a>
+  {% if report.errors %}
+  <table style="margin-top:12px"><tr><th>Строка</th><th>Данные</th><th>Причина</th></tr>
+  {% for e in report.errors %}
+    <tr><td>{{ e.line }}</td>
+        <td class="mute">{{ e.row.date }} · {{ e.row.outlet }} · {{ e.row.product }} · {{ e.row.price }} ₸ · {{ e.row.pack }}</td>
+        <td class="warn">{{ e.error }}</td></tr>
+  {% endfor %}</table>
+  {% endif %}
+</div>
+{% endif %}
+
+<h2>Загрузка из файла</h2>
+<form class="card row" method="post" enctype="multipart/form-data">
+  <div><label>CSV-файл со столбцами: date; outlet; product; price; pack</label>
+    <input type="file" name="file" accept=".csv" required></div>
+  <button>Загрузить</button>
+</form>
+
+<h2>Ручной ввод</h2>
+<form class="card row" method="post">
+  <div><label>Дата</label><input type="date" name="date" required></div>
+  <div><label>Торговая точка</label><select name="outlet">{% for o in outlets %}<option>{{ o.name }}</option>{% endfor %}</select></div>
+  <div><label>Товар</label><select name="product">{% for p in products %}<option>{{ p.name }}</option>{% endfor %}</select></div>
+  <div><label>Цена упаковки, ₸</label><input name="price" size="8" required placeholder="450"></div>
+  <div><label>Упаковка</label><input name="pack" size="8" required placeholder="900 г"></div>
+  <button>Сохранить</button>
+</form>
+<p class="mute">Упаковка: число и единица — кг, г, л, мл, шт, дес. Пример: 450 ₸ за «900 г» = 500 ₸/кг.</p>
+
+<h2>Последние записи</h2>
+<div class="card"><table>
+  <tr><th>Дата</th><th>Точка</th><th>Товар</th><th class="num">Цена упаковки</th><th>Упаковка</th><th class="num">Цена за единицу</th></tr>
+  {% for r in last %}
+  <tr><td>{{ r.date }}</td><td>{{ r.outlet }}</td><td>{{ r.product }}</td>
+      <td class="num">{{ '%.0f'|format(r.pack_price) }} ₸</td><td>{{ r.pack }}</td>
+      <td class="num"><b>{{ '%.0f'|format(r.unit_price) }} ₸/{{ units[r.base_unit] }}</b></td></tr>
+  {% else %}<tr><td colspan="6" class="mute">Пока пусто</td></tr>{% endfor %}
+</table></div>
+{% endblock %}

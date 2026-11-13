@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Мониторинг цен СЗПТ</title>
+<style>
+  :root { --ink:#1c2a33; --mute:#63727c; --line:#dde3e7; --bg:#f5f7f8; --accent:#0b6e4f; --warn:#b3261e; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.45 system-ui, sans-serif; color:var(--ink); background:var(--bg); }
+  header { background:#fff; border-bottom:1px solid var(--line); padding:12px 24px; display:flex; gap:28px; align-items:center; flex-wrap:wrap; }
+  header b { font-size:17px; }
+  nav a { margin-right:18px; color:var(--mute); text-decoration:none; padding:6px 0; }
+  nav a.on { color:var(--accent); border-bottom:2px solid var(--accent); }
+  main { max-width:1100px; margin:0 auto; padding:24px; }
+  h1 { font-size:22px; margin:0 0 16px; } h2 { font-size:16px; margin:24px 0 8px; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:8px; padding:16px; margin-bottom:16px; }
+  .row { display:flex; gap:12px; flex-wrap:wrap; align-items:end; }
+  label { display:block; font-size:12px; color:var(--mute); margin-bottom:3px; }
+  input, select, textarea, button { font:inherit; padding:7px 10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+  button { background:var(--accent); color:#fff; border-color:var(--accent); cursor:pointer; }
+  table { width:100%; border-collapse:collapse; }
+  th, td { text-align:left; padding:7px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { font-size:12px; color:var(--mute); font-weight:600; }
+  td.num, th.num { text-align:right; font-variant-numeric:tabular-nums; }
+  .kpis { display:flex; gap:12px; flex-wrap:wrap; }
+  .kpi { flex:1; min-width:140px; background:#fff; border:1px solid var(--line); border-radius:8px; padding:12px 16px; }
+  .kpi span { display:block; font-size:12px; color:var(--mute); } .kpi b { font-size:22px; }
+  .warn { color:var(--warn); } .ok { color:var(--accent); } .mute { color:var(--mute); font-size:13px; }
+  .tag { display:inline-block; padding:2px 8px; border-radius:10px; font-size:12px; background:#e8edf0; }
+  .note { font-size:12px; color:var(--mute); margin-top:24px; }
+</style>
+</head>
+<body>
+<header>
+  <b>Мониторинг цен СЗПТ</b>
+  <nav>
+    <a href="{{ url_for('compare') }}" class="{{ 'on' if request.endpoint=='compare' }}">Сравнение</a>
+    <a href="{{ url_for('input_prices') }}" class="{{ 'on' if request.endpoint=='input_prices' }}">Ввод цен</a>
+    <a href="{{ url_for('alerts') }}" class="{{ 'on' if request.endpoint=='alerts' }}">Проверка</a>
+    <a href="{{ url_for('refs') }}" class="{{ 'on' if request.endpoint=='refs' }}">Справочники</a>
+  </nav>
+</header>
+<main>
+{% block body %}{% endblock %}
+<p class="note">Демонстрационный прототип на тестовых данных. Сигнал — основание для проверки, а не вывод о нарушении закона.</p>
+</main>
+</body>
+</html>

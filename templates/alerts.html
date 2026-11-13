@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Отклонения, требующие проверки</h1>
+<p>
+  <a class="tag" href="{{ url_for('alerts') }}">Все</a>
+  {% for s in ['новый', 'ошибка ввода', 'подтверждено', 'на контроле'] %}
+    <a class="tag" href="{{ url_for('alerts', status=s) }}" {% if s==status %}style="background:#0b6e4f;color:#fff"{% endif %}>{{ s }}: {{ counts.get(s, 0) }}</a>
+  {% endfor %}
+</p>
+{% for a in alerts %}
+<div class="card">
+  <div><b>{{ a.product }}</b> · {{ a.outlet }} ({{ a.district }}) · {{ a.date }} <span class="tag">{{ a.status }}</span></div>
+  <div>{{ '%.0f'|format(a.pack_price) }} ₸ за {{ a.pack }} = <b>{{ '%.0f'|format(a.unit_price) }} ₸/{{ units[a.base_unit] }}</b></div>
+  <div class="warn">{{ a.reason }}</div>
+  <form class="row" method="post" style="margin-top:10px">
+    <input type="hidden" name="id" value="{{ a.id }}">
+    <div style="flex:1; min-width:260px"><label>Вывод аналитика</label>
+      <input name="conclusion" value="{{ a.conclusion }}" style="width:100%" placeholder="Что показала проверка"></div>
+    <div><label>Статус</label><select name="status">
+      {% for s in ['новый', 'ошибка ввода', 'подтверждено', 'на контроле'] %}<option {{ 'selected' if s==a.status }}>{{ s }}</option>{% endfor %}
+    </select></div>
+    <button>Сохранить</button>
+  </form>
+</div>
+{% else %}
+<div class="card">Сигналов нет.</div>
+{% endfor %}
+{% endblock %}
